@@ -115,27 +115,33 @@ The following components are used in this project. Their respective datasheets p
 
 <h2 id="compiler">🧰 Compiler</h2>
 
-This project targets the **ESP8266** microcontroller and is compatible with the **Arduino development environment**.
+This project targets the **ESP8266** microcontroller and is compatible with the **Arduino development environment** as well as command-line compilation using the ESP8266 GCC toolchain.
 
-To compile and upload code to the ESP8266, the following toolchain is used:
+### ✅ Option 1: Arduino IDE
 
-- **Arduino IDE with ESP8266 Core**  
-  The ESP8266 Arduino Core provides the necessary compiler, libraries, and board definitions to build and flash firmware.  
-  Installation instructions: [Installing ESP8266 Board in Arduino IDE](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/)  
-  Board package URL:  ## Compiler
+The ESP8266 Arduino Core provides the necessary compiler, libraries, and board definitions to build and flash firmware.
 
-This project targets the **ESP8266** microcontroller and is compatible with the **Arduino development environment**.
+- Installation guide: [Installing ESP8266 Board in Arduino IDE](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/)
+- Board package URL: [http://arduino.esp8266.com/stable/package_esp8266com_index.json](http://arduino.esp8266.com/stable/package_esp8266com_index.json)
 
-To compile and upload code to the ESP8266, the following toolchain is used:
+Once installed, select the ESP8266 board (e.g., NodeMCU 1.0) from **Tools > Board**.
 
-- **Arduino IDE with ESP8266 Core**  
-  The ESP8266 Arduino Core provides the necessary compiler, libraries, and board definitions to build and flash firmware.  
-  Installation instructions: [Installing ESP8266 Board in Arduino IDE](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/)  
-  Board package URL: [Package ESP8266com Index](http://arduino.esp8266.com/stable/package_esp8266com_index.json)
+---
 
-Once installed, select the appropriate ESP8266 board (e.g., NodeMCU 1.0) from the **Tools > Board** menu in the Arduino IDE. The compiler used under the hood is based on **xtensa-lx106 GCC**, tailored for the ESP8266 architecture.
+### ⚙️ Option 2: Xtensa GCC Toolchain for Makefile-based builds
 
-For advanced builds or automation, you may also consider using **PlatformIO** or **makeEspArduino**, which support ESP8266 compilation outside the Arduino IDE.
+For advanced builds outside the Arduino IDE, such as using `make`, you need the **xtensa-lx106-elf-gcc** toolchain.
+
+- 📦 Download precompiled toolchain for Windows:  
+  [xtensa-lx106-elf-gcc8_4_0-esp-2020r3-win32.zip](https://dl.espressif.com/dl/xtensa-lx106-elf-gcc8_4_0-esp-2020r3-win32.zip)
+
+#### Setup Instructions:
+1. Unzip to a convenient location, e.g. `C:\Esp8266Toolchain`
+2. Add `C:\Esp8266Toolchain\bin` to your system's `PATH` variable
+3. Confirm installation by running:
+   ```cmd
+   xtensa-lx106-elf-gcc --version
+
 [🔝 Back to Index](#index)
 
 <h2 id="products">📦 Products</h2>
@@ -148,9 +154,12 @@ Compiled outputs and build artifacts are organized in the `Target` directory:
 
 - **Target/release/**  
   Contains final binary and debug outputs for flashing and analysis:  
-  - `.map` file — memory map  
-  - `.elf` file — Executable and Linkable Format  
-  - `.hex` file — Intel HEX format used for programming microcontrollers
+  - `.elf` file — Executable and Linkable Format used for linking and flashing  
+  - `.hex` file — Intel HEX format used for programming microcontrollers  
+  - `.bin` file — Raw binary image, commonly used for direct flashing  
+  - `.map` file — Memory map detailing address layout and symbol locations  
+  - `.lst` file — Disassembled listing showing instruction-level breakdown  
+  - `.out` file — Symbol and source-level analysis combining object code and mappings
 
 [🔝 Back to Index](#index)
 
