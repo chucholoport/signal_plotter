@@ -115,32 +115,20 @@ The following components are used in this project. Their respective datasheets p
 
 <h2 id="compiler">🧰 Compiler</h2>
 
-This project targets the **ESP8266** microcontroller and is compatible with the **Arduino development environment** as well as command-line compilation using the ESP8266 GCC toolchain.
+### 🔧 ESP8266 RTOS SDK Setup
 
-### ✅ Option 1: Arduino IDE
+To compile and flash the firmware using the ESP8266 RTOS SDK toolchain, run the setup script located in the `BuildTools` directory:
 
-The ESP8266 Arduino Core provides the necessary compiler, libraries, and board definitions to build and flash firmware.
+```bash
+source BuildTools/esp-env.sh
+```
 
-- Installation guide: [Installing ESP8266 Board in Arduino IDE](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/)
-- Board package URL: [http://arduino.esp8266.com/stable/package_esp8266com_index.json](http://arduino.esp8266.com/stable/package_esp8266com_index.json)
+This script configures the environment variables, activates the virtual environment, and prepares the toolchain paths for building the project.
+Make sure you have cloned the customized SDK and mbedtls repositories:
+- [ESP8266_RTOS_SDK fork](https://github.com/chucholoport/ESP8266_RTOS_SDK)
+- [mbedtls fork](https://github.com/chucholoport/mbedtls)
 
-Once installed, select the ESP8266 board (e.g., NodeMCU 1.0) from **Tools > Board**.
-
----
-
-### ⚙️ Option 2: Xtensa GCC Toolchain for Makefile-based builds
-
-For advanced builds outside the Arduino IDE, such as using `make`, you need the **xtensa-lx106-elf-gcc** toolchain.
-
-- 📦 Download precompiled toolchain for Windows:  
-  [xtensa-lx106-elf-gcc8_4_0-esp-2020r3-win32.zip](https://dl.espressif.com/dl/xtensa-lx106-elf-gcc8_4_0-esp-2020r3-win32.zip)
-
-#### Setup Instructions:
-1. Unzip to a convenient location, e.g. `C:\Esp8266Toolchain`
-2. Add `C:\Esp8266Toolchain\bin` to your system's `PATH` variable
-3. Confirm installation by running:
-   ```cmd
-   xtensa-lx106-elf-gcc --version
+Future updates to esp-env.sh will include full automation of SDK setup, submodule initialization, and environment provisioning.
 
 [🔝 Back to Index](#index)
 
