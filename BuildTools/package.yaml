@@ -1,0 +1,9 @@
+structure:
+  - name: bootloaders
+    match: "bootloader.bin|bootloader.elf|bootloader.map"
+    origin: "Source/build"
+    destination: "Target/release/bootloader"
+  - name: application
+    match: "signal-plotter.bin|signal-plotter.elf|signal-plotter.map"
+    origin: "Source/build"
+    destination: "Target/release/application"

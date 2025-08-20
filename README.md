@@ -18,22 +18,28 @@ Real-time signal visualization on an ESP8266 with OLED output. Explore signal be
 
 <h2 id="description">📝 Description</h2>
 An embedded C project for real-time signal visualization using an ESP8266 microcontroller and a 128x64 OLED display. Designed to plot waveforms and analyze signal behavior directly on hardware, ideal for educational and experimental signal processing tasks.
+
 [🔝 Back to Index](#index)
 
 <h2 id="author">👤 Author</h2>
+
 - Name: Jesus Salvador Lopez Ortega
 - GitHub: [chucholoport](https://github.com/chucholoport)
+
 [🔝 Back to Index](#index)
 
 <h2 id="github-repository">🔗 GitHub Repository</h2>
+
 [Signal Plotter Repository](https://github.com/chucholoport/signal_plotter)
+
 [🔝 Back to Index](#index)
 
 <h2 id="project-structure">🧱 Project Structure</h2>
 
 The following layout outlines the organization of the `signal_plotter` project:
-└── signal_plotter/
 
+```bash
+└── signal_plotter/
     ├── Source/
     │   ├── Hal/
     │   │   ├── HalAdc/
@@ -96,6 +102,8 @@ The following layout outlines the organization of the `signal_plotter` project:
     │   └── main.c
     └── BuildTools/
         └── Makefile
+```
+
 [🔝 Back to Index](#index)
 
 <h2 id="datasheets">📚 Datasheets</h2>
@@ -159,4 +167,5 @@ You can find the full license text in the following file:
 [LICENSE](LICENSE)
 
 This license permits reuse, modification, distribution, and private use, provided that the original copyright and license notice are included.
+
 [🔝 Back to Index](#index)

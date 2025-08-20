@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+        "label": "Clean Project",
+        "type": "shell",
+        "command": "./build.sh",
+        "args": ["clean"],
+        "options": {
+            "cwd": "${workspaceFolder}/BuildTools"
+        },
+        "problemMatcher": []
+    },
+    {
+        "label": "Build & Flash Firmware",
+        "type": "shell",
+        "command": "./build.sh",
+        "args": ["flash"],
+        "options": {
+            "cwd": "${workspaceFolder}/BuildTools"
+        },
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        },
+        "problemMatcher": []
+    },
+    {
+        "label": "Clean, Build & Flash Firmware",
+        "type": "shell",
+        "command": "./build.sh",
+        "args": ["clean", "flash"],
+        "options": {
+            "cwd": "${workspaceFolder}/BuildTools"
+        },
+        "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Automatically generated build file. Do not edit.
+COMPONENT_INCLUDES += $(IDF_PATH)/components/ssd1306/src
+COMPONENT_LDFLAGS += -L$(BUILD_DIR_BASE)/ssd1306 -lssd1306
+COMPONENT_LINKER_DEPS += 
+COMPONENT_SUBMODULES += 
+COMPONENT_LIBRARIES += ssd1306
+COMPONENT_LDFRAGMENTS += 
+component-ssd1306-build: 
