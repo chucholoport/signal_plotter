@@ -10,15 +10,6 @@
  *          Designed for embedded systems using ESP8266 hardware peripherals.
  */
 
-/**
- * @brief   GPIO pin assignments for various peripherals.
- * @details These definitions map logical names to physical GPIO numbers.
- *          Modify these values according to your hardware setup.
- *          Ensure that the pin numbers correspond to the actual GPIOs used in your circuit.
- */
-//#define GPIO_MODE_OUTPUT    (1U)
-//#define GPIO_MODE_INPUT     (0U)
-
 /** 
  * @brief   Logic levels for digital signals.
  * @details Defines the logic high and low levels used in the application.
@@ -45,12 +36,12 @@
  * @brief I2C bus ID used for OLED communication.
  * ESP8266 only supports bus 0.
  */
-#define DIO_I2C_BUS_OLED         (0U)
+#define DIO_I2C_BUS_OLED        (0U)
 
 /**
  * @brief I2C address of the OLED display (SSD1306).
  */
-#define DIO_I2C_ADDR_OLED        (0x3CU)
+#define DIO_I2C_ADDR_OLED       (0x3CU)
 
 /**
  * @brief   Analog input channel used for MAX4466 microphone module.
@@ -98,11 +89,6 @@ extern void Dio_SetPinHigh(uint8_t pin_id);
  * @param[in]  pin_id  GPIO number to clear.
  */
 extern void Dio_SetPinLow(uint8_t pin_id);
-
-/**
- * @brief   Initializes digital output pins used by peripherals.
- */
-extern void Dio_InitOutputs(void);
 
 /**
  * @brief   Initializes I²C pin configuration for OLED display.

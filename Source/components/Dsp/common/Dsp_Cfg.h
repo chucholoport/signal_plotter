@@ -12,69 +12,46 @@
  */
 
 /* -------------------------------------------------------------------------- */ 
-/* Signal Buffer Parameters                                                   */ 
+/* DSP Parameters                                                             */ 
 /* Defines core configuration values for signal acquisition and analysis      */ 
 /* -------------------------------------------------------------------------- */
-#define SIGNAL_BUFFER_SIZE                          (512U) 
-#define SIGNAL_BUFFER_HISTERESIS                    (16U) 
-#define SIGNAL_BUFFER_GAIN                          (1U) 
-#define SIGNAL_BUFFER_MAX                           (512U)
-#define SIGNAL_BUFFER_MIN                           (-512)
-#define SIGNAL_BUFFER_CENTER                        (512U) 
-#define SIGNAL_BUFFER_LOWER_LIMIT                   (SIGNAL_BUFFER_CENTER - SIGNAL_BUFFER_HISTERESIS) 
-#define SIGNAL_BUFFER_UPPER_LIMIT                   (SIGNAL_BUFFER_CENTER + SIGNAL_BUFFER_HISTERESIS) 
-#define SIGNAL_BUFFER_THRESHOLD                     (200U)
+ 
+/* Signal Processing parameters */
+#define DSP_BUFFER_SIZE                     (512U)
+#define DSP_GAIN                            (1U) 
+#define DSP_OFFSET                          (590)
+#define DSP_THRESHOLD                       (100)
+#define DSP_MAX                             (512)
+#define DSP_MIN                             (-512)
 
-/* Default operational parameters */ 
-#define SIGNAL_BUFFER_DEFAULT_SAMPLE_RATE           (1000000U) 
-#define SIGNAL_BUFFER_DEFAULT_AVERAGE               (0U) 
-#define SIGNAL_BUFFER_DEFAULT_LEVEL                 (0U) 
-#define SIGNAL_BUFFER_DEFAULT_TRIGGER               (0U)
+/* Low Pass Filter parameters */
+#define LOW_PASS_FILTER_HISTERESIS          (16U) 
+#define LOW_PASS_FILTER_FALL_EDGE           (DSP_OFFSET - LOW_PASS_FILTER_HISTERESIS) 
+#define LOW_PASS_FILTER_RISE_EDGE           (DSP_OFFSET + LOW_PASS_FILTER_HISTERESIS) 
+
+/* Signal Processing formulas */
+#define DSP_INSIDE_LOW_PASS_FILTER(sample)  ((sample) < LOW_PASS_FILTER_FALL_EDGE && (sample) > LOW_PASS_FILTER_RISE_EDGE)
+#define DSP_APPLY_LOW_PASS_FILTER(sample)   (DSP_INSIDE_LOW_PASS_FILTER(sample) ? 0 : (DSP_REMOVE_OFFSET(sample)))
+#define DSP_REMOVE_OFFSET(sample)           (sample - DSP_OFFSET)
+#define DSP_APPLY_GAIN(sample)              (sample * DSP_GAIN)
+#define DSP_NORMALIZE(sample)               (DSP_APPLY_LOW_PASS_FILTER(DSP_APPLY_GAIN(sample)))
 
 /* -------------------------------------------------------------------------- */ 
-/* Signal Buffer Utility Macros                                               */ 
+/* DSP Utility Macros                                                         */ 
 /* Provide safe computations for signal metrics and trigger logic             */ 
 /* -------------------------------------------------------------------------- */
 
-/**
- * @brief Computes the effective sample rate based on buffer size and elapsed time.
- *
- * @param size Number of samples acquired.
- * @param time Elapsed time in microseconds.
- * @return Sample rate in Hz. Returns 0 if time is zero. 
- */ 
-#define SIGNAL_BUFFER_SAMPLE_RATE(size, time) \
-    (((time) > 0U) ? ((SIGNAL_BUFFER_DEFAULT_SAMPLE_RATE * (size)) / (time)) : 0U)
+/* Default operational parameters */ 
+#define DSP_DEFAULT_SAMPLE_RATE             (1000000U) 
+#define DSP_DEFAULT_AVERAGE                 (0U) 
+#define DSP_DEFAULT_LEVEL                   (0U) 
+#define DSP_DEFAULT_TRIGGER                 (0U)
 
-/**
- * @brief Computes the average value of accumulated samples.
- *
- * @param sum Total sum of sample values.
- * @param size Number of samples.
- * @return Average value. Returns 0 if size is zero. 
- */ 
-#define SIGNAL_BUFFER_AVERAGE(sum, size) \
-    (((size) > 0U) ? ((sum) / (size)) : 0U)
-
-/**
- * @brief Computes the signal level from accumulated energy.
- *
- * @param sum Total energy or amplitude sum.
- * @param size Number of samples.
- * @return Signal level. Returns 0 if size is zero. 
- */ 
-#define SIGNAL_BUFFER_LEVEL(sum, size) \
-    (((size) > 0U) ? ((sum) / (size)) : 0U)
-
-/**
- * @brief Evaluates whether signal energy exceeds the trigger threshold.
- *
- * @param energy Computed signal energy.
- * @param threshold Trigger threshold value.
- * @return true if energy exceeds threshold, false otherwise. 
- */ 
-#define SIGNAL_BUFFER_TRIGGER(energy, threshold) \
-    ((energy) > (threshold))
+/* Operational parameters formulas */
+#define DSP_SAMPLE_RATE(size, time)         (((time) > 0U) ? ((DSP_DEFAULT_SAMPLE_RATE * (size)) / (time))  : 0U)
+#define DSP_AVERAGE(sum, size)              (((size) > 0U) ? ((sum) / (size))                               : 0U)
+#define DSP_LEVEL(sum, size)                (((size) > 0U) ? ((sum) / (size))                               : 0U)
+#define DSP_TRIGGER(energy, threshold)      ((energy) > (threshold))
 
 /* -------------------------------------------------------------------------- */ 
 /* Signal Buffer Configuration structure.                                     */ 
@@ -88,18 +65,19 @@
  */ 
  typedef struct 
  { 
-    uint32_t buffer_size;  // Size of the signal buffer in samples 
+    uint32_t size;         // Size of the signal buffer in samples 
     uint32_t sample_rate;  // Sample rate in Hz 
-    uint16_t center;       // Signal center value 
+    uint8_t  gain;         // Signal gain value
+    int16_t  offset;       // Signal offset value 
+    int16_t  threshold;    // Signal detectable threshold 
     int16_t  max;          // Signal maximum value
     int16_t  min;          // Signal minimum value
-    uint16_t lower_limit;  // Signal lower limit histeresis
-    uint16_t upper_limit;  // Signal upper limit histeresis
-    int16_t  threshold;    // Signal detectable threshold 
+    int16_t  fall_edge;    // Signal low pass filter fall edge
+    int16_t  rise_edge;    // Signal low pass filter rise edge
     int16_t  average;      // Signal average 
     int16_t  level;        // Signal level 
     uint8_t  trigger;      // Flag marking if signal is detectable 
-} DspBffr_Cfg_t;
+} Dsp_Cfg_t;
 
 /**
  * @brief Signal Buffer Configuration instance.
@@ -107,10 +85,11 @@
  * This instance is used to initialize the signal buffer with the specified parameters.
  * Modify the values as needed for your specific signal buffering requirements. 
  */ 
-extern DspBffr_Cfg_t dsp_cfg;
+extern Dsp_Cfg_t dsp_cfg;
 
-/* -------------------------------------------------------------------------- */ 
-/* Signal Buffer Public Data and Function Prototypes                          */ 
+/* -------------------------------------------------------------------------- */
+/* External Buffers                                                           */
+/* Used for intermediate signal shaping and final display rendering           */
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -121,43 +100,25 @@ extern DspBffr_Cfg_t dsp_cfg;
  */ 
 extern int16_t* dsp_buffer;
 
+/* -------------------------------------------------------------------------- */
+/* DSP Public Function Prototypes                                             */
+/* -------------------------------------------------------------------------- */
+
 /**
  * @brief Initializes the signal buffer with the specified configuration.
  *
  * This function sets up the signal buffer based on the provided configuration parameters. 
  * It allocates memory for the buffer and initializes it to zero.
- * @param buffer Pointer to the signal buffer pointer.
- * @param size Size of the signal buffer in samples.
  */ 
-void Dsp_InitBuffer(int16_t** buffer, size_t size);
-
-/**
- * @brief Deinitializes the signal buffer.
- * This function cleans up the signal buffer resources and settings. 
- * It frees the allocated memory for the signal buffer and resets the pointer to NULL.
- * @param buffer Pointer to the signal buffer pointer.
- */ 
-void Dsp_Deinit(int16_t** buffer);
-
-/**
- * @brief Normalizes a signal buffer sample.
- *
- * This function scales the samples in the signal buffer to a specified range.
- * It ensures that the maximum absolute value in the buffer is within the defined limits.
- * @param cfg Pointer to the DSP configuration structure.
- * @param sample The sample value to normalize.
- * @return The normalized sample value. 
- */ 
-int16_t Dsp_NormalizeSample(DspBffr_Cfg_t* cfg, int16_t sample);
+void Dsp_Init(void);
 
 /**
  * @brief Fills signal buffer.
+ *
  * This function fills the signal buffer.
  * It reads samples from the ADC, normalizes them, and stores them in the buffer.
  * It also calculates statistics such as average, level, and trigger status.
- * @param cfg Pointer to the DSP configuration structure.
- * @param buffer Pointer to the signal buffer. 
  */ 
-void Dsp_FillBuffer(DspBffr_Cfg_t* cfg, int16_t* buffer);
+void Dsp_Run(void);
 
 #endif

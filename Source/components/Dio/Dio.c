@@ -28,12 +28,6 @@ void Dio_SetPinLow(uint8_t pin_id)
     gpio_set_level(pin_id, GPIO_INTR_LOW_LEVEL);
 }
 
-void Dio_InitOutputs(void)
-{
-    /* Example: if future output pins are added, they are configured here */
-    /* Currently not used; initialization handled by DrvDio_InitOledPins() */
-}
-
 /**
  * @brief   Initializes I²C pins connected to OLED display.
  * @details Configures GPIOs used for SDA and SCL as digital outputs.

@@ -11,8 +11,8 @@
 
 extern int16_t* tst_buffer;
 
-void TstBffr_Init(void);
+void Tst_Init(void);
 
-void TstBffr_ClearBuffer(void);
+void Tst_Clear(void);
 
 #endif

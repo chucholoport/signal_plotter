@@ -1,20 +1,20 @@
 #include "Tst_Cfg.h"
 
-#include "SgnlPlttr_Cfg.h"
+#include "Plot_Cfg.h"
 
 int16_t* tst_buffer = NULL;
 
-void TstBffr_Init(void)
+void Tst_Init(void)
 {
     if (tst_buffer != NULL) 
     {
         free(tst_buffer);
     }
 
-    tst_buffer = (int16_t*)malloc(OLED_SCREEN_WIDTH * sizeof(int16_t));
+    tst_buffer = (int16_t*)malloc(OLED_SCREEN_BYTES_WIDTH * sizeof(int16_t));
 }
 
-void TstBffr_ClearBuffer(void)
+void Tst_Clear(void)
 {
     if (tst_buffer == NULL)
     {

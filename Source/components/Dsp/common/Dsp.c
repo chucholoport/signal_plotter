@@ -14,84 +14,56 @@
 
 int16_t* dsp_buffer = NULL;
 
-DspBffr_Cfg_t dsp_cfg =
+Dsp_Cfg_t dsp_cfg =
 {
-    /* data */
-    .buffer_size = SIGNAL_BUFFER_SIZE,  
-    .sample_rate = SIGNAL_BUFFER_DEFAULT_SAMPLE_RATE,
-    .center      = SIGNAL_BUFFER_CENTER,   
-    .max         = SIGNAL_BUFFER_MAX,
-    .min         = SIGNAL_BUFFER_MIN,
-    .lower_limit = SIGNAL_BUFFER_LOWER_LIMIT,
-    .upper_limit = SIGNAL_BUFFER_UPPER_LIMIT,   
-    .threshold   = SIGNAL_BUFFER_THRESHOLD,
-    .average     = SIGNAL_BUFFER_DEFAULT_AVERAGE,
-    .level       = SIGNAL_BUFFER_DEFAULT_LEVEL,
-    .trigger     = SIGNAL_BUFFER_DEFAULT_TRIGGER
+    .size           = DSP_BUFFER_SIZE,  
+    .sample_rate    = DSP_DEFAULT_SAMPLE_RATE,
+    .gain           = DSP_GAIN,
+    .offset         = DSP_OFFSET,   
+    .threshold      = DSP_THRESHOLD,
+    .max            = DSP_MAX,
+    .min            = DSP_MIN,
+    .fall_edge      = LOW_PASS_FILTER_FALL_EDGE,
+    .rise_edge      = LOW_PASS_FILTER_RISE_EDGE,   
+    .average        = DSP_DEFAULT_AVERAGE,
+    .level          = DSP_DEFAULT_LEVEL,
+    .trigger        = DSP_DEFAULT_TRIGGER
 };
 
-void Dsp_InitBuffer(int16_t** buffer, size_t size)
+void Dsp_Init(void)
 {
-    if (*buffer != NULL) 
+    if (dsp_buffer != NULL) 
     {
-        free(*buffer);
+        free(dsp_buffer);
     }
 
-    *buffer = (int16_t*)malloc(size * sizeof(int16_t));
+    dsp_buffer = (int16_t*)malloc(DSP_BUFFER_SIZE * sizeof(int16_t));
 }
 
-void Dsp_Deinit(int16_t** buffer)
-{
-    if (*buffer != NULL)
-    {
-        free(*buffer);
-        *buffer = NULL;
-    }
-}
-
-int16_t Dsp_NormalizeSample(DspBffr_Cfg_t* cfg, int16_t sample)
-{
-    int16_t nrm = sample;
-
-    /* Apply gain */
-    nrm = nrm * SIGNAL_BUFFER_GAIN;
-
-    /* Center and limit */
-    if ((nrm > cfg->lower_limit) && (nrm < cfg->upper_limit))
-    {
-        nrm = 0;
-    }
-    else
-    {
-      nrm = nrm - cfg->center;
-    }
-    
-    return nrm;
-}
-
-void Dsp_FillBuffer(DspBffr_Cfg_t* cfg, int16_t* buffer)
+void Dsp_Run(void)
 {
     /* Initialize config statistics */
-    cfg->average = (uint32_t) 0U;
-    cfg->trigger = (uint8_t)  0U;
+    dsp_cfg.sample_rate = DSP_DEFAULT_SAMPLE_RATE;
+    dsp_cfg.average     = DSP_DEFAULT_AVERAGE;
+    dsp_cfg.level       = DSP_DEFAULT_LEVEL;
+    dsp_cfg.trigger     = DSP_DEFAULT_TRIGGER;
 
     /* Initialize auxiliar variables */
     uint32_t sgnl_sum  = 0U;
     uint32_t sgnl_lvl  = 0U;
-    uint64_t exec_time = 0U;
 
     /* Register startup time */
     uint64_t start_time = esp_timer_get_time();
 
     /* Iterate signal buffer */
-    for (uint32_t i = 0; i < cfg->buffer_size; ++i) 
+    for (uint32_t i = 0U; i < dsp_cfg.size; i++) 
     {
         /* Data obtention & normalization */
         int16_t raw = Adc_Read();
-        int16_t nrm = Dsp_NormalizeSample(cfg, raw);
-        
+        int16_t nrm = DSP_NORMALIZE(raw);
+
         /* Assign normalized value to buffer */
-        buffer[i] = nrm;
+        dsp_buffer[i] = nrm;
 
         /* Calculate statistics */
         sgnl_sum += nrm;
@@ -102,11 +74,11 @@ void Dsp_FillBuffer(DspBffr_Cfg_t* cfg, int16_t* buffer)
     uint64_t end_time = esp_timer_get_time();
 
     /* Calculate execution time */
-    exec_time = end_time - start_time;
+    uint64_t exec_time = end_time - start_time;
 
     /* Update statistics fields */
-    cfg->sample_rate = (uint32_t) SIGNAL_BUFFER_SAMPLE_RATE (cfg->buffer_size,  exec_time       );
-    cfg->average     = (int16_t)  SIGNAL_BUFFER_AVERAGE     (sgnl_sum,          cfg->buffer_size);
-    cfg->level       = (int16_t)  SIGNAL_BUFFER_LEVEL       (sgnl_lvl,          cfg->buffer_size);
-    cfg->trigger     = (uint8_t)  SIGNAL_BUFFER_TRIGGER     (cfg->threshold,    cfg->level      );
+    dsp_cfg.sample_rate = (uint32_t) DSP_SAMPLE_RATE (dsp_cfg.size,      exec_time    );
+    dsp_cfg.average     = (int16_t)  DSP_AVERAGE     (sgnl_sum,          dsp_cfg.size );
+    dsp_cfg.level       = (int16_t)  DSP_LEVEL       (sgnl_lvl,          dsp_cfg.size );
+    dsp_cfg.trigger     = (uint8_t)  DSP_TRIGGER     (dsp_cfg.threshold, dsp_cfg.level);
 }

@@ -3,12 +3,15 @@
 
 /* Include DSP algorithms */
 #include "Dsp_Cfg.h"
-#include "AtCrrltn_Cfg.h"
+#include "Autocorrelation_Cfg.h"
 
 /* Include SSD1306 functions */
 #include "Hmi_Cfg.h"
-#include "SgnlPlttr_Cfg.h"
-#include "Tuner_Cfg.h"
+#include "Message_Cfg.h"
+#include "Plot_Cfg.h"
+#include "Symbol_Cfg.h"
+#include "Ruler_Cfg.h"
+#include "Needle_Cfg.h"
 
 /* Include test signal generation */
 #include "Tst_Cfg.h"
@@ -17,105 +20,65 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "ssd1306.h"
-
 #define TEST_MODE_ON 0
-
-#define MAIN_MESSAGE_TEXT_BUFFER_SIZE 30
 
 char* main_msg_buffer = NULL;
 
-/* Initialize message structure */
-HmiDisplayMsg_t msg = 
-{
-    .text  = "Signal Plotter",
-    .clear = 1,
-    .time  = 500,
-    .x     = 0,
-    .y     = 0
-};
-
 void Test_Task(void* pvParameters)
 {
-    /* Initialize configuration structures */
-    uint32_t   freq = 0U;
 
-    NoteInfo_t note = 
-    {
-        .name     = "A#0",
-        .symbol   = 'A',
-        .exp_freq = 466,
-        .cur_freq = 466,
-        .cents    = 0
-    };
+    /* Hardware components initialization */
+    Adc_Init();
+    Dsp_Init();
+    Hmi_Init();
 
-    /* Initialize components */
-    Hmi_Init();                                                         // Initialize the HMI display
-    Hmi_InitMessage(&main_msg_buffer, MAIN_MESSAGE_TEXT_BUFFER_SIZE);   // Initialize the HMI message
-    Adc_Init();                                                         // Initialize the ADC with the configuration
-    Dsp_InitBuffer(&dsp_buffer, dsp_cfg.buffer_size);                   // Initialize the DSP buffer
-    Frq_InitBuffer(&frq_buffer, dsp_cfg.buffer_size / 2);               // Initialize the Frequency buffer
+    /* HMI Blocks initialization */
+    Message_Init();
+    Plot_Init();
+    Symbol_Init();
+    Ruler_Init();
+    Needle_Init();
 
-    sprintf(main_msg_buffer, "Signal Plotter Ready!");
-    Hmi_WriteMessage(&msg, main_msg_buffer);
+    /* Welcome message */
+    sprintf(text, "Signal Plotter 2.0");
+    Message_Update();
+    Needle_Run();
 
-    /* Initialize OLED blocks */
-    SgnlPlttr_Init();
-    Tuner_Init();
-
+    vTaskDelay(pdMS_TO_TICKS(50));
+    
     if (TEST_MODE_ON)
     {
-        TstBffr_Init();  // Initialize the test buffer
-        TstBffr_ClearBuffer();  // Clear the test buffer
         
-        generate_triangle_wave();
+        Triangle_Run();
         
-        SgnlPlttr_ClearBitmap();
-
-        SgnlPlttr_FillShapedBuffer(&trngl_cfg, tst_buffer, &plt_cfg, oled_bitmap);
-
-        SgnlPlttr_DisplayBitmap(&plt_cfg, oled_bitmap);
-
         while(true)
         {
-            vTaskDelay(pdMS_TO_TICKS(1));
+            vTaskDelay(pdMS_TO_TICKS(50));
         }
     }
 
-
-    while (true)
+    while(true)
     {
-        /* Fill the DSP buffer */
-        Dsp_FillBuffer(&dsp_cfg, dsp_buffer);
+        Dsp_Run();
+    
+        Plot_Run();
 
-        if (dsp_cfg.trigger)
+        Symbol_Run();
+        Needle_Run();
+        
+        if (current_note.symbol != ' ')
         {
-            /* Estimate frequency */
-            freq = Frq_EstimateFundamental(&dsp_cfg, dsp_buffer);
-            note = Tuner_GetNoteFromFreq(freq); 
-            sprintf(main_msg_buffer, "Note: %-3s Frq: %-3dHz", note.name, freq);
-
+            sprintf(text, "%s frq: %-3d Hz       ", current_note.name, current_note.exp_freq);
         }
         else
         {
-            /* No signal */
-            freq = 0U;
-            note = Tuner_GetNoteFromFreq(freq); 
-            sprintf(main_msg_buffer, "Waiting for signal...");
+            sprintf(text, "Signal Plotter 2.0    ");
+            
         }
+        Message_Update();
         
-        /* Update message with main buffer */
-        Hmi_UpdateMessage(&msg, main_msg_buffer);
-
-        /* Run Signal Plotter*/
-        SgnlPlttr_Run(&dsp_cfg, dsp_buffer, &plt_cfg, oled_bitmap);
-
-        /* Run Tuner */
-        Tuner_Run(&tuner_cfg, &note, needle_buffer, needle_bitmap);
-
         vTaskDelay(pdMS_TO_TICKS(50));
     }
-    
 }
 
 void app_main(void)

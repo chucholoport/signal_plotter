@@ -1,22 +1,25 @@
 #include "Trngl_Cfg.h"
 
-#include "Dsp_Cfg.h"
 #include "Tst_Cfg.h"
+#include "Dsp_Cfg.h"
+#include "Bitmap_Cfg.h"
+#include "Plot_Cfg.h"
 
-DspBffr_Cfg_t trngl_cfg =
+Dsp_Cfg_t trngl_cfg =
 {
     /* data */
-    .buffer_size = TEST_BUFFER_SIZE,  // Size of the triangle wave buffer
-    .sample_rate = SIGNAL_BUFFER_DEFAULT_SAMPLE_RATE,  // Sample rate for the triangle wave
-    .center      = SIGNAL_BUFFER_CENTER,  // Center value for the triangle wave
-    .max         = TEST_BUFFER_MAX,  // Maximum value for the triangle wave
-    .min         = TEST_BUFFER_MIN,  // Minimum value for the triangle wave
-    .lower_limit = SIGNAL_BUFFER_LOWER_LIMIT,  // Lower limit for the triangle wave histeresis
-    .upper_limit = SIGNAL_BUFFER_UPPER_LIMIT,  // Upper limit for the triangle wave histeresis
-    .threshold   = SIGNAL_BUFFER_THRESHOLD,  // Threshold for detecting the triangle wave
-    .average     = SIGNAL_BUFFER_DEFAULT_AVERAGE,  // Default average value
-    .level       = SIGNAL_BUFFER_DEFAULT_LEVEL,  // Default level value
-    .trigger     = SIGNAL_BUFFER_DEFAULT_TRIGGER  // Trigger flag for the triangle wave
+    .size         = TEST_BUFFER_SIZE,          // Size of the triangle wave buffer
+    .sample_rate  = DSP_DEFAULT_SAMPLE_RATE,   // Sample rate for the triangle wave
+    .gain         = DSP_GAIN,                  // Center value for the triangle wave
+    .offset       = DSP_OFFSET,                // Center value for the triangle wave
+    .threshold    = DSP_THRESHOLD,             // Threshold for detecting the triangle wave
+    .max          = TEST_BUFFER_MAX,           // Maximum value for the triangle wave
+    .min          = TEST_BUFFER_MIN,           // Minimum value for the triangle wave
+    .fall_edge    = LOW_PASS_FILTER_FALL_EDGE, // Lower limit for the triangle wave histeresis
+    .rise_edge    = LOW_PASS_FILTER_RISE_EDGE, // Upper limit for the triangle wave histeresis
+    .average      = DSP_DEFAULT_AVERAGE,       // Default average value
+    .level        = DSP_DEFAULT_LEVEL,         // Default level value
+    .trigger      = DSP_DEFAULT_TRIGGER        // Trigger flag for the triangle wave
 };
 
 void generate_triangle_wave(void) 
@@ -44,4 +47,12 @@ void generate_triangle_wave(void)
     // Scale and center in range [-512, 512]
     tst_buffer[i] = (int16_t)(triangle * amplitude + offset);
   }
+}
+
+void Triangle_Run(void)
+{
+  Tst_Init();
+
+  generate_triangle_wave();
+  Bitmap_Run(&trngl_cfg, &plot_cfg, tst_buffer, plot_bitmap);
 }
